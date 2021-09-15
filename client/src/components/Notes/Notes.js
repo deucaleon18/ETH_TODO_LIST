@@ -165,7 +165,7 @@ console.log(todos)
 
 
   if (!web3) {
-    return <div>Loading Web3, accounts, and contract...</div>;
+    return <>Loading Web3, accounts, and contract...</>;
   } 
   else {
     return (
