@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from "react";
 import "./Notes.css";
+// eslint-disable-next-line
 import Web3 from "web3";
 import TodoList from "../../contracts/TodoList.json";
 import getWeb3 from "../../../src/getWeb3";
-
 const Notes = () => {
-  const [account, setAccount] = useState("");
+  const [account, setAccount] = useState(undefined);
   const [todos, setTodos] = useState([]);
   const [newnote, setNewnote] = useState("");
-  const [web3, setWeb3] = useState("");
-  const [contract, setContract] = useState("");
+  
+  const [web3, setWeb3] = useState(undefined);
+  const [contract, setContract] = useState(undefined);
   const [loading, setLoading] = useState(true);
   const [checked, setChecked] = useState(false);
 
+
   useEffect(() => {
+    setLoading(true)
     const getData = async () => {
       try {
         // Get network provider and web3 instance.
@@ -28,6 +31,7 @@ const Notes = () => {
         console.log(networkId);
         const deployedNetwork = TodoList.networks[networkId];
         console.log(deployedNetwork);
+
         const instance = new web3.eth.Contract(
           TodoList.abi,
           deployedNetwork && deployedNetwork.address
@@ -35,7 +39,7 @@ const Notes = () => {
         console.log(instance);
         setContract(instance);
 
-        getTodo({ instance, accounts });
+     
       } catch (error) {
         alert(
           `Failed to load web3, accounts, or contract. Check console for details.`
@@ -45,40 +49,101 @@ const Notes = () => {
     };
     getData();
 
-    const getTodo = async ({ instance, accounts }) => {
-      await instance.methods
-        .taskCount()
-        .call()
-        .then(async (response) => {
-          console.log(response);
+   
+  },[]);
 
-          for (let i = 0; i <= response; i++) {
-            await instance.methods
-              .tasks(i)
-              .call()
-              .then((data) => {
-                console.log(data);
-              })
-              .catch((err) => console.log(err));
-          }
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    };
-  }, []);
+
+useEffect(()=>{
+
+  //  console.log(account)
+  //  console.log(contract)
+  //  console.log(web3)
+   const getTodo = async () => {
+     await contract.methods
+       .taskCount()
+       .call()
+       .then(async (response) => {
+         console.log(response);
+
+         for (let i = 1; i <= response; i++) {
+           await contract.methods
+             .tasks(i)
+             .call()
+             .then((data) => {
+
+               console.log(data);
+               var tasks = todos
+               
+               tasks.push({
+                 content: data.content,
+                 id: data.id,
+                 completed: data.completed,
+               });
+
+              //  tasks.push({
+              //      content: data.content,
+              //      id: data.id,
+              //      completed: data.completed,
+              //    })
+
+                 console.log(tasks)
+                 setTodos(tasks)
+
+
+                // console.log(todos)
+              //  console.log(loading);
+               
+             })
+           
+             .catch((err) => console.log(err));
+         }
+       })
+       .then(()=>{
+         setLoading(false)
+       })
+       .catch((err) => {
+         console.log(err);
+       });
+   
+    
+   };
+
+  
+    if (
+      typeof web3 != "undefined" &&
+      typeof contract != "undefined" &&
+      typeof account != "undefined"
+    ) {
+      getTodo();
+
+     
+    }
+
+console.log(todos)
+},[web3,contract,account,todos])
+
 
   const handleToggle = async (id) => {
     // e.preventDefault()
     setChecked(!checked);
     console.log("basic toggle");
 
-    // await contract.methods.toggleTask(id).send({from:account})
-    // .then((res)=>{console.log(res)})
-    // .catch((err)=>{console.log(err)})
+    await contract.methods
+      .toggleTask(id)
+      .send({ from: account })
+      .then((res) => {
+        console.log(res);
+      })
+      .then(() => {
+        window.location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   const handleSubmit = async (e) => {
+ 
     e.preventDefault();
     console.log(account);
     console.log(newnote);
@@ -89,14 +154,20 @@ const Notes = () => {
       .then((res) => {
         console.log(res);
       })
+      .then(()=>{
+        window.location.reload()
+      })
       .catch((err) => {
         console.log(err);
       });
   };
 
+
+
   if (!web3) {
     return <div>Loading Web3, accounts, and contract...</div>;
-  } else {
+  } 
+  else {
     return (
       <div className="notes-section">
         <div className="pending">
@@ -123,18 +194,27 @@ const Notes = () => {
 
           <div className="your-notes">
             <h1>YOUR INCOMPLETE NOTES:</h1>
-
-            <div className="display-notes">
-              <div className="note">
-                <div>#NOTE 1</div>{" "}
-                <input
-                  value={checked}
-                  type="checkbox"
-                  className="checkbox"
-                  onChange={() => handleToggle()}
-                ></input>
-              </div>
-            </div>
+            {console.log(todos)}
+            {console.log(loading)}
+            {!loading && todos
+              ? todos.map((todo) => {
+                  return (
+                    <div className="display-notes" key={todo.id}>
+                      <div className="note">
+                        <div>
+                          {todo.id}.{todo.content}
+                        </div>{" "}
+                        <input
+                          checked={todo.completed ? true : false}
+                          type="checkbox"
+                          className="checkbox"
+                          onChange={() => handleToggle(todo.id)}
+                        ></input>
+                      </div>
+                    </div>
+                  );
+                })
+              : null}
           </div>
         </div>
 
@@ -143,7 +223,18 @@ const Notes = () => {
             <h1>YOUR COMPLETED NOTES:</h1>
 
             <div className="completed-notes-display">
-              this is a default completed note
+              {!loading && todos
+                ? // eslint-disable-next-line
+                  todos.map((todo) => {
+                    if (todo.completed) {
+                      return (
+                        <div key={todo.id}>
+                          {todo.content} <br />
+                        </div>
+                      );
+                    }
+                  })
+                : null}
             </div>
           </div>
         </div>

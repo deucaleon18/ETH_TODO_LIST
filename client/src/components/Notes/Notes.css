@@ -2,16 +2,14 @@
     display:flex;
     flex-wrap:wrap;
     height:calc(100vh - 80px);
-    width:100%;
+    width:100vw;
     overflow: auto;
+    overflow-x: hidden;
 }
 
 .pending{
  width:50%;
 }
-
-
-
 
 
 .creation{
