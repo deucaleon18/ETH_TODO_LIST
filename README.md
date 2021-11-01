@@ -10,11 +10,17 @@ Ganache: [http://truffleframework.com/ganache/](http://truffleframework.com/gana
 Metamask: [https://metamask.io/](https://metamask.io/)<br/>
 
 ## Step 1. Clone the project<br/>
-` git clone https://github.com/deucaleon18/ETH_TODO_LIST `
+```
+git clone https://github.com/deucaleon18/ETH_TODO_LIST
+```
 
 ## Step 2. Install dependencies<br/>
-`  cd ETH_TODO_LIST/client<br/>
-   npm install `
+```  
+cd ETH_TODO_LIST/client
+npm install
+```
+<br/>
+   
 
 
 ## Step 3. Start Ganache
@@ -22,7 +28,10 @@ Open the Ganache GUI client that you downloaded and installed. This will start y
 
 
 ## Step 4. Compile & Deploy Election Smart Contract<br/>
-`  truffle migrate --reset `<br/>
+```  
+truffle migrate --reset
+```
+<br/>
 You must migrate the solidity smart contract each time your restart ganache. 
 
 
@@ -36,7 +45,10 @@ Import an account provided by ganache.
 
 
 ## Step 6. Run the Front End Application
-` npm run dev Visit this URL in your browser: http://localhost:3000`
+``` 
+npm run dev
+``` 
+Visit this URL in your browser: http://localhost:3000`
 
 ### Project also deployed [here](http://eth-todo-list.vercel.app/)
 
